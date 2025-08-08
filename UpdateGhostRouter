@@ -1,0 +1,21 @@
+class GhostRouter:
+    def __init__(self, *ghosts: GhostSession, intrusion_detector=None):
+        self.ghosts = {ghost.ghost_name: ghost for ghost in ghosts}
+        self.detector = intrusion_detector
+
+    def route(self, packet: EtherPacket, *route_order):
+        print(f"🧭 Starting route: {' → '.join(route_order)}")
+        for ghost_name in route_order:
+            if self.detector and self.detector.is_blacklisted(ghost_name):
+                print(f"🚫 Skipping blacklisted ghost '{ghost_name}'")
+                continue
+
+            ghost = self.ghosts.get(ghost_name)
+            if not ghost:
+                print(f"⚠️ Ghost '{ghost_name}' not found.")
+                continue
+            ghost.receive_packet(packet)
+
+        print(f"📦 Final packet trace: {packet.trace_manifest()}")
+
+## GhostRouter will skip ghosts exorcised from the ether and not welcome in this space
