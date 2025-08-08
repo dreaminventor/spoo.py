@@ -1,0 +1,69 @@
+# --- Modified EtherPacket ---
+class EtherPacket:
+    def __init__(self, message, ether_level=1):
+        self.packet_id = uuid.uuid4()
+        self.timestamp = time.time()
+        self.ether_level = ether_level
+        self.message = message
+        self.hash = self._generate_ether_signature()
+        self.trace = []  # Keeps track of each ghost hop
+
+    def _generate_ether_signature(self):
+        ether_string = f"{self.timestamp}{self.message}{self.ether_level}"
+        return hashlib.sha256(ether_string.encode()).hexdigest()
+
+    def hop(self, ghost_name):
+        self.trace.append(ghost_name)
+
+    def manifest(self):
+        return f"[Ether-{self.ether_level}] ({self.packet_id}): {self.message} 👻"
+
+    def trace_manifest(self):
+        route = " → ".join(self.trace) if self.trace else "(untraced)"
+        return f"{self.manifest()} | Route: {route}"
+
+
+# --- Modified GhostSession ---
+class GhostSession:
+    def __init__(self, ghost_name="Unnamed Specter"):
+        self.ghost_name = ghost_name
+        self.connected = False
+        self.channel = SpiritChannel(name=f"{ghost_name}-link")
+
+    def summon(self):
+        print(f"🧿 Initiating séance with '{self.ghost_name}'...")
+        self.channel.open()
+        self.connected = True
+        print(f"✨ '{self.ghost_name}' has manifested.")
+
+    def dismiss(self):
+        print(f"🌫️ Dismissing '{self.ghost_name}' back to the ether.")
+        self.channel.close()
+        self.connected = False
+
+    def receive_packet(self, packet: EtherPacket):
+        packet.hop(self.ghost_name)
+        print(f"👻 '{self.ghost_name}' received: {packet.trace_manifest()}")
+
+    def speak(self, message, ether_level=1):
+        if not self.connected:
+            raise ConnectionError("No ghost connected.")
+        packet = EtherPacket(message, ether_level)
+        packet.hop(self.ghost_name)
+        self.channel.transmit(packet)
+
+
+# --- New GhostRouter ---
+class GhostRouter:
+    def __init__(self, *ghosts: GhostSession):
+        self.ghosts = {ghost.ghost_name: ghost for ghost in ghosts}
+
+    def route(self, packet: EtherPacket, *route_order):
+        print(f"🧭 Starting route: {' → '.join(route_order)}")
+        for ghost_name in route_order:
+            ghost = self.ghosts.get(ghost_name)
+            if not ghost:
+                print(f"⚠️ Ghost '{ghost_name}' not found in router.")
+                continue
+            ghost.receive_packet(packet)
+        print(f"📦 Final packet trace: {packet.trace_manifest()}")
