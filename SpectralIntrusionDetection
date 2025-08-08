@@ -1,0 +1,29 @@
+class SpectralIntrusionDetector:
+    def __init__(self, trusted_ghosts):
+        self.trusted = set(trusted_ghosts)
+        self.blacklist = set()
+
+    def inspect(self, packet: EtherPacket):
+        report = {
+            "valid_signature": packet.verify_signature(),
+            "route_trace": packet.trace,
+            "untrusted_entities": [],
+            "blacklisted": False
+        }
+
+        for ghost in packet.trace:
+            if ghost not in self.trusted:
+                report["untrusted_entities"].append(ghost)
+                if ghost in self.blacklist:
+                    report["blacklisted"] = True
+
+        return report
+
+    def banish(self, ghost_name):
+        self.blacklist.add(ghost_name)
+        print(f"💀 Ghost '{ghost_name}' has been exorcised from the ether.")
+
+    def is_blacklisted(self, ghost_name):
+        return ghost_name in self.blacklist
+
+#still mostly ChatGPT-4o with minor changes manually made
