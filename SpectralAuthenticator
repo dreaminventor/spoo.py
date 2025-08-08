@@ -1,0 +1,35 @@
+class SpectralAuth:
+    def __init__(self):
+        self.known_ghosts = {}  # ghost_name -> {sigil, voice_echo}
+
+    def register_ghost(self, ghost: GhostSession):
+        self.known_ghosts[ghost.ghost_name] = {
+            "sigil": ghost.sigil,
+            "voice_echo": ghost.voice_echo
+        }
+
+    def verify_packet(self, packet: EtherPacket):
+        result = {
+            "valid_signature": packet.verify_signature(),
+            "valid_sigil": False,
+            "valid_voice": False,
+            "trusted_sender": False
+        }
+
+        # Try to match first ghost in trace
+        if not packet.trace:
+            return result
+
+        sender = packet.trace[0]
+        ghost_info = self.known_ghosts.get(sender)
+
+        if ghost_info:
+            result["valid_sigil"] = packet.sigil == ghost_info["sigil"]
+            result["valid_voice"] = packet.voice_echo == ghost_info["voice_echo"]
+            result["trusted_sender"] = all([
+                result["valid_signature"],
+                result["valid_sigil"],
+                result["valid_voice"]
+            ])
+
+        return result
