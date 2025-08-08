@@ -1,0 +1,27 @@
+class EtherPacket:
+    def __init__(self, message, ether_level=1, sigil=None, voice_echo=None):
+        self.packet_id = uuid.uuid4()
+        self.timestamp = time.time()
+        self.ether_level = ether_level
+        self.message = message
+        self.trace = []
+        self.sigil = sigil
+        self.voice_echo = voice_echo
+        self.hash = self._generate_ether_signature()
+
+    def _generate_ether_signature(self):
+        ether_string = f"{self.timestamp}{self.message}{self.ether_level}"
+        return hashlib.sha256(ether_string.encode()).hexdigest()
+
+    def verify_signature(self):
+        return self.hash == self._generate_ether_signature()
+
+    def hop(self, ghost_name):
+        self.trace.append(ghost_name)
+
+    def manifest(self):
+        return f"[Ether-{self.ether_level}] ({self.packet_id}): {self.message} 👻"
+
+    def trace_manifest(self):
+        route = " → ".join(self.trace) if self.trace else "(untraced)"
+        return f"{self.manifest()} | Route: {route}"
