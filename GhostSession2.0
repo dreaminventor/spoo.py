@@ -1,0 +1,38 @@
+class GhostSession:
+    def __init__(self, ghost_name="Unnamed Specter", sigil=None, voice_echo=None):
+        self.ghost_name = ghost_name
+        self.connected = False
+        self.channel = SpiritChannel(name=f"{ghost_name}-link")
+
+        # Spectral authentication identity
+        self.sigil = sigil or self._generate_default_sigil()
+        self.voice_echo = voice_echo or f"Echo of {ghost_name}"
+
+    def _generate_default_sigil(self):
+        return hashlib.sha1(self.ghost_name.encode()).hexdigest()
+
+    def summon(self):
+        print(f"🧿 Initiating séance with '{self.ghost_name}'...")
+        self.channel.open()
+        self.connected = True
+        print(f"✨ '{self.ghost_name}' has manifested.")
+
+    def dismiss(self):
+        print(f"🌫️ Dismissing '{self.ghost_name}' back to the ether.")
+        self.channel.close()
+        self.connected = False
+
+    def speak(self, message, ether_level=1):
+        if not self.connected:
+            raise ConnectionError("No ghost connected.")
+        packet = EtherPacket(
+            message, ether_level,
+            sigil=self.sigil,
+            voice_echo=self.voice_echo
+        )
+        packet.hop(self.ghost_name)
+        self.channel.transmit(packet)
+
+    def receive_packet(self, packet: "EtherPacket"):
+        packet.hop(self.ghost_name)
+        print(f"👻 '{self.ghost_name}' received: {packet.trace_manifest()}")
