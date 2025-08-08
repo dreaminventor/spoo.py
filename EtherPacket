@@ -15,9 +15,13 @@ class EtherPacket:
         self.message = message
         self.hash = self._generate_ether_signature()
 
-    def _generate_ether_signature(self):
+    def _generate_ether_signature(self): #option 1
         ether_string = f"{self.timestamp}{self.message}{self.ether_level}"
         return hashlib.sha256(ether_string.encode()).hexdigest()
+
+    def verify_signature(self): #option 2
+        expected = self._generate_ether_signature()
+        return expected == self.hash
 
     def manifest(self):
         return f"[Ether-{self.ether_level}] ({self.packet_id}): {self.message} 👻"
