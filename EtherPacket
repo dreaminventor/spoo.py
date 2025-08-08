@@ -1,0 +1,99 @@
+import time
+import random
+import hashlib
+import uuid
+
+
+class EtherPacket:
+    """
+    Represents a packet of ghostly communication traveling through the ether.
+    """
+    def __init__(self, message, ether_level=1):
+        self.packet_id = uuid.uuid4()
+        self.timestamp = time.time()
+        self.ether_level = ether_level  # Level of ghostly energy (1-10)
+        self.message = message
+        self.hash = self._generate_ether_signature()
+
+    def _generate_ether_signature(self):
+        ether_string = f"{self.timestamp}{self.message}{self.ether_level}"
+        return hashlib.sha256(ether_string.encode()).hexdigest()
+
+    def manifest(self):
+        return f"[Ether-{self.ether_level}] ({self.packet_id}): {self.message} 👻"
+
+
+class SpiritChannel:
+    """
+    Routes ether-packets between realms.
+    """
+    def __init__(self, name="default-channel"):
+        self.name = name
+        self.opened = False
+        self.latency = random.uniform(0.3, 2.5)  # Ghosts are slow
+
+    def open(self):
+        print(f"🔮 Opening spirit channel '{self.name}'...")
+        self.opened = True
+        time.sleep(self.latency)
+        print(f"✔️ Spirit channel '{self.name}' established.")
+
+    def close(self):
+        print(f"👋 Closing spirit channel '{self.name}'.")
+        self.opened = False
+
+    def transmit(self, packet: EtherPacket):
+        if not self.opened:
+            raise ConnectionError("Spirit channel is closed.")
+        print(f"📡 Transmitting ether-packet through '{self.name}'...")
+        time.sleep(self.latency)
+        print(f"📬 Received on other side: {packet.manifest()}")
+
+
+class GhostSession:
+    """
+    Manages the connection to the ghost realm.
+    """
+    def __init__(self, ghost_name="Unnamed Specter"):
+        self.ghost_name = ghost_name
+        self.connected = False
+        self.channel = SpiritChannel(name=f"{ghost_name}-link")
+
+    def summon(self):
+        print(f"🧿 Initiating séance with '{self.ghost_name}'...")
+        self.channel.open()
+        self.connected = True
+        print(f"✨ '{self.ghost_name}' has manifested.")
+
+    def dismiss(self):
+        print(f"🌫️ Dismissing '{self.ghost_name}' back to the ether.")
+        self.channel.close()
+        self.connected = False
+
+    def speak(self, message, ether_level=1):
+        if not self.connected:
+            raise ConnectionError("No ghost connected.")
+        packet = EtherPacket(message, ether_level)
+        self.channel.transmit(packet)
+
+
+# High-level interface
+class Seance:
+    def __init__(self, ghost_name):
+        self.session = GhostSession(ghost_name)
+
+    def __enter__(self):
+        self.session.summon()
+        return self.session
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.session.dismiss()
+
+
+# Example usage
+if __name__ == "__main__":
+    with Seance("Lady Spectra") as ghost:
+        ghost.speak("Why do you disturb my eternal slumber?", ether_level=3)
+        ghost.speak("Bring me... the ancient amulet...", ether_level=6)
+
+##This is the adjusted output based on responding to GPT-4o's first response to the original prompt. Code Block 1.
